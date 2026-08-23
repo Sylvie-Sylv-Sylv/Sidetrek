@@ -216,6 +216,19 @@ code {
         paint-order: stroke fill;
     }
 
+    .gradient-text-2 {
+        background: linear-gradient(
+            110deg,
+            #b5e1fd,
+            #e1a8f9
+        );
+        background-clip: text;
+        -webkit-background-clip: text;
+        color: transparent;
+
+        paint-order: stroke fill;
+    }
+
     .drop-shadow-8 {
         filter: drop-shadow(0 8px 0 #eaa9ff);
     }
