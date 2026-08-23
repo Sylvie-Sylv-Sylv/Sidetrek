@@ -1,0 +1,220 @@
+---
+import "../../styles/global.css";
+import { getCollection } from "astro:content";
+import Layout from "../../layouts/Layout.astro";
+
+const posts = await getCollection("blog");
+
+posts.sort(
+    (a, b) =>
+        b.data.pubDate.getTime() - a.data.pubDate.getTime()
+);
+---
+
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width" />
+        <title>Blog</title>
+        <meta
+            name="description"
+            content="Articles, notes, and things I've been building."
+        />
+    </head>
+
+    <body
+        class="
+            bg-zinc-50
+            text-zinc-950
+            dark:bg-zinc-950
+            dark:text-zinc-50
+            transition-colors
+            duration-300
+        "
+    >
+        <Layout
+            title="Blog"
+            description="Articles, notes, and things I've been building."
+        >
+            <main class="container-content py-16 sm:py-20">
+                <!-- Header -->
+                <header class="mb-20">
+                    <a
+                        href={import.meta.env.BASE_URL}
+                        class="
+                            text-xs
+                            font-700
+                            uppercase
+                            tracking-[0.18em]
+                            text-zinc-400
+                            transition-colors
+                            hover:text-zinc-950
+                            dark:text-zinc-600
+                            dark:hover:text-white
+                        "
+                    >
+                        ← Home
+                    </a>
+
+                    <h1
+                        class="
+                            mt-10
+                            text-[5rem]
+                            sm:text-[7rem]
+                            lg:text-[9rem]
+                            font-900
+                            tracking-[-0.02em]
+                            leading-[0.85]
+                        "
+                    >
+                        <span class="stroke-6 drop-shadow-8 gradient-text">Blog</span>
+                    </h1>
+
+                    <p
+                        class="
+                            mt-12
+                            max-w-lg
+                            text-base
+                            sm:text-lg
+                            font-500
+                            tracking-[0.01em]
+                            leading-8
+                            sm:leading-9
+                            text-zinc-500
+                            dark:text-zinc-400
+                        "
+                    >
+                        Things we've learned, built, broken,
+                        and occasionally understood.
+                    </p>
+                </header>
+
+                <!-- Posts -->
+                <section class="space-y-4">
+                    {posts.map((post) => (
+                        <article
+                            class="
+                                group
+                                rounded-2xl
+                                bg-zinc-50
+                                dark:bg-zinc-950
+                                [border:1px_solid_rgb(113_113_122)]
+                                dark:[border:1px_solid_rgb(82_82_91)]
+                                [transition:transform_450ms_cubic-bezier(0.16,1,0.3,1)]
+                                hover:translate-x-2
+                            "
+                        >
+                            <a
+                                href={`${import.meta.env.BASE_URL}blog/${post.id}/`}
+                                class="
+                                    block
+                                    px-6
+                                    py-8
+                                    sm:px-8
+                                    sm:py-10
+                                "
+                            >
+                                <div
+                                    class="
+                                        flex
+                                        items-center
+                                        gap-3
+                                        text-[0.65rem]
+                                        sm:text-xs
+                                        font-700
+                                        uppercase
+                                        tracking-[0.14em]
+                                        text-zinc-500
+                                        dark:text-zinc-500
+                                    "
+                                >
+                                    <time datetime={post.data.pubDate.toISOString()}>
+                                        {post.data.pubDate.toLocaleDateString(
+                                            "en-US",
+                                            {
+                                                year: "numeric",
+                                                month: "short",
+                                                day: "numeric",
+                                            }
+                                        )}
+                                    </time>
+
+                                    {post.data.tags.length > 0 && (
+                                        <>
+                                            <span>·</span>
+                                            <span>
+                                                {post.data.tags.join(" · ")}
+                                            </span>
+                                        </>
+                                    )}
+                                </div>
+
+                                <h2
+                                    class="
+                                        mt-5
+                                        text-4xl
+                                        sm:text-5xl
+                                        font-800
+                                        tracking-[-0.015em]
+                                        leading-[1.05]
+                                    "
+                                >
+                                    <span class="gradient-text">{post.data.title}</span>
+                                </h2>
+
+                                <p
+                                    class="
+                                        mt-6
+                                        max-w-2xl
+                                        text-sm
+                                        sm:text-base
+                                        font-450
+                                        tracking-[0.01em]
+                                        leading-7
+                                        sm:leading-8
+                                        text-zinc-500
+                                        dark:text-zinc-400
+                                        transition-colors
+                                        duration-300
+                                        ease-out
+                                        group-hover:text-zinc-200
+                                    "
+                                >
+                                    {post.data.description}
+                                </p>
+
+                                <div
+                                    class="
+                                        mt-8
+                                        h-1
+                                        w-0
+                                        rounded-full
+                                        gradient-accent
+                                        transition-[width]
+                                        duration-500
+                                        ease-out
+                                        group-hover:w-20
+                                    "
+                                />
+                            </a>
+                        </article>
+                    ))}
+                </section>
+
+                {posts.length === 0 && (
+                    <p
+                        class="
+                            text-sm
+                            font-600
+                            tracking-[0.01em]
+                            text-zinc-400
+                            dark:text-zinc-600
+                        "
+                    >
+                        No posts yet.
+                    </p>
+                )}
+            </main>
+        </Layout>
+    </body>
+</html>
