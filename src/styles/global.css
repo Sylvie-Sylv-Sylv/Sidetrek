@@ -220,16 +220,16 @@ code {
         filter: drop-shadow(0 8px 0 #eaa9ff);
     }
 
-    .drop-shadow-4 {
-        filter: drop-shadow(0 4px 0 #eaa9ff);
+    .drop-shadow-5 {
+        filter: drop-shadow(0 5px 0 #eaa9ff);
     }
 
     .stroke-6 {
         -webkit-text-stroke: 6px #ffffff;
     }
 
-    .stroke-2 {
-        -webkit-text-stroke: 2px #ffffff;
+    .stroke-3 {
+        -webkit-text-stroke: 3px #ffffff;
     }
 
     .gradient-accent {
