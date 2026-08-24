@@ -1,17 +1,723 @@
 ---
 import "../styles/global.css";
+
+import { getCollection } from "astro:content";
+
+import Layout from "../layouts/Layout.astro";
+
+const posts = await getCollection("blog");
+
+posts.sort(
+    (a, b) =>
+        b.data.pubDate.getTime() - a.data.pubDate.getTime()
+);
+
+const newestPosts = posts.slice(0, 3);
+
+const socials = [
+    {
+        name: "YouTube",
+        href: "https://www.youtube.com/@YOUR_CHANNEL",
+    },
+    {
+        name: "GitHub",
+        href: "https://github.com/YOUR_USERNAME",
+    },
+    {
+        name: "Twitter / X",
+        href: "https://x.com/YOUR_USERNAME",
+    },
+    {
+        name: "Discord",
+        href: "https://discord.gg/YOUR_SERVER",
+    },
+];
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<style>
+    :global(html) {
+        scroll-snap-type: y mandatory;
+        scroll-behavior: smooth;
+    }
+
+    :global(body) {
+        margin: 0;
+    }
+
+    .snap-section {
+        min-height: 100vh;
+        scroll-snap-align: start;
+        scroll-snap-stop: always;
+    }
+</style>
+
+<Layout
+    title="Sidetrek"
+    description="Things we've learned, built, broken, and occasionally understood."
+>
+    <main class="container-content py-16 sm:py-20">
+
+        <!-- Hero + About -->
+        <section
+            class="
+                snap-section
+                flex
+                items-center
+            "
+        >
+            <div class="w-full">
+                <div class="w-full">
+                    <p
+                        class="
+                            text-xs
+                            sm:text-sm
+                            font-700
+                            uppercase
+                            tracking-[0.2em]
+                            text-zinc-400
+                            dark:text-zinc-500
+                        "
+                    >
+                        The Workshop
+                    </p>
+
+                    <h1
+                        class="
+                            mt-8
+							mb-20
+                            text-[5rem]
+                            sm:text-[7rem]
+                            lg:text-[9rem]
+                            font-900
+                            tracking-[-0.04em]
+                            leading-[0.82]
+                        "
+                    >
+                        <span class="text-container drop-shadow-8">
+							<span class="stroke-6" aria-hidden="true">Sidetrek - 寄り道</span>
+							<span class="gradient-text">Sidetrek - 寄り道</span>
+						</span>
+                    </h1>
+
+					<div>
+						<p
+							class="
+								text-xs
+								font-700
+								uppercase
+								tracking-[0.18em]
+								text-zinc-400
+								dark:text-zinc-500
+							"
+						>
+							What is this?
+						</p>
+					</div>
+
+                    <div
+                        class="
+                            mt-8
+                            grid
+                            gap-8
+                            grid-cols-2
+                            lg:gap-8
+                            lg:items-start
+                        "
+                    >
+						<p
+							class="
+								mt-5
+								max-w-2xl
+								text-2xl
+								sm:text-3xl
+								font-600
+								tracking-[-0.02em]
+								leading-9
+								sm:leading-10
+							"
+						>
+							A little corner of the internet where
+							we're figuring things out by making them.
+						</p>
+
+						<div></div>
+						
+						<p
+							class="
+								max-w-xl
+								text-sm
+								sm:text-base
+								font-500
+								leading-7
+								sm:leading-8
+								text-zinc-500
+								dark:text-zinc-400
+							"
+						>
+							Game development, programming, machine
+							learning, mathematics, experiments,
+							questionable ideas, and whatever else
+							happens to survive the week.
+						</p>
+
+						<div class="grid grid-cols-1 text-right items-start">
+							<p
+								class="
+									w-full
+									text-sm
+									sm:text-base
+									font-500
+									tracking-[0.01em]
+									leading-7
+									sm:leading-8
+									text-zinc-500
+									dark:text-zinc-400
+									self-start
+									text-right
+
+								"
+							>
+								Things we've learned, built, broken, and occasionally understood.
+							</p>
+
+							<a
+								href={`${import.meta.env.BASE_URL}blog/`}
+								class="
+									mt-8
+									gap-3
+									text-xs
+									sm:text-sm
+									font-700
+									uppercase
+									tracking-[0.14em]
+									text-zinc-950
+									dark:text-white
+									transition-transform
+									duration-300
+									hover:translate-x-2
+									self-end
+								"
+							>
+								Read the blog
+								<span class="text-lg">→</span>
+							</a>
+						</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Socials -->
+        <section
+            class="
+                snap-section
+                flex
+                items-center
+            "
+        >
+            <div class="w-full">
+                <div
+                    class="
+                        flex
+                        flex-col
+                        gap-10
+                        lg:flex-row
+                        lg:items-end
+                        lg:justify-between
+                    "
+                >
+                    <div>
+                        <p
+                            class="
+                                text-xs
+                                font-700
+                                uppercase
+                                tracking-[0.18em]
+                                text-zinc-400
+                                dark:text-zinc-500
+                            "
+                        >
+                            Find us elsewhere
+                        </p>
+
+                        <h2 class="text-container drop-shadow-5 mt-8 text-5xl sm:text-6xl lg:text-7xl font-800 tracking-[-0.035em] leading-[0.9]">
+							<span class="stroke-3" aria-hidden="true">Follow the chaos.</span>
+							<span class="gradient-text">Follow the chaos.</span>
+						</h2>
+                    </div>
+
+                    <div
+                        class="
+                            flex
+                            flex-wrap
+                            gap-x-8
+                            gap-y-4
+                        "
+                    >
+                        {
+                            socials.map((social) => (
+                                <a
+                                    href={social.href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="
+                                        text-xs
+                                        sm:text-sm
+                                        font-700
+                                        uppercase
+                                        tracking-[0.12em]
+                                        text-zinc-500
+                                        dark:text-zinc-400
+                                        transition-colors
+                                        hover:text-zinc-950
+                                        dark:hover:text-white
+                                    "
+                                >
+                                    {social.name}
+                                </a>
+                            ))
+                        }
+                    </div>
+                </div>
+
+                <a
+                    href="https://www.youtube.com/@YOUR_CHANNEL"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="
+                        group
+                        mt-12
+                        block
+                        rounded-2xl
+                        border
+                        border-zinc-300
+                        bg-white
+                        p-8
+                        sm:p-10
+                        dark:border-zinc-700
+                        dark:bg-zinc-900
+                        transition-all
+                        duration-500
+                        hover:-translate-y-1
+                        hover:border-zinc-500
+                        dark:hover:border-zinc-500
+                    "
+                >
+                    <div
+                        class="
+                            flex
+                            flex-col
+                            gap-10
+                            sm:flex-row
+                            sm:items-center
+                            sm:justify-between
+                        "
+                    >
+                        <div>
+                            <p
+                                class="
+                                    text-xs
+                                    font-700
+                                    uppercase
+                                    tracking-[0.16em]
+                                    text-zinc-400
+                                    dark:text-zinc-500
+                                "
+                            >
+                                YouTube
+                            </p>
+
+                            <h3
+                                class="
+                                    mt-4
+                                    text-4xl
+                                    sm:text-5xl
+                                    font-800
+                                    tracking-[-0.03em]
+                                    leading-none
+                                "
+                            >
+                                Watch us build things.
+                            </h3>
+
+                            <p
+                                class="
+                                    mt-5
+                                    max-w-xl
+                                    text-sm
+                                    sm:text-base
+                                    leading-7
+                                    text-zinc-500
+                                    dark:text-zinc-400
+                                "
+                            >
+                                Development logs, experiments,
+                                projects, and whatever makes it
+                                through the editing process.
+                            </p>
+                        </div>
+
+                        <span
+                            class="
+                                text-5xl
+                                transition-transform
+                                duration-500
+                                group-hover:translate-x-3
+                            "
+                        >
+                            →
+                        </span>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- Newest Posts -->
+        <section
+            class="
+                snap-section
+                flex
+                items-center
+            "
+        >
+            <div class="w-full">
+                <div
+                    class="
+                        mb-10
+                        flex
+                        flex-col
+                        gap-5
+                        sm:flex-row
+                        sm:items-end
+                        sm:justify-between
+                    "
+                >
+                    <div>
+                        <p
+                            class="
+                                text-xs
+                                font-700
+                                uppercase
+                                tracking-[0.18em]
+                                text-zinc-400
+                                dark:text-zinc-500
+                            "
+                        >
+                            Freshly documented
+                        </p>
+
+                        <h2
+                            class="
+                                mt-5
+                                text-5xl
+                                sm:text-6xl
+                                font-800
+                                tracking-[-0.035em]
+                                leading-[0.9]
+                            "
+                        >
+                            Newest posts
+                        </h2>
+                    </div>
+
+                    <a
+                        href={`${import.meta.env.BASE_URL}blog/`}
+                        class="
+                            text-xs
+                            sm:text-sm
+                            font-700
+                            uppercase
+                            tracking-[0.14em]
+                            text-zinc-500
+                            dark:text-zinc-400
+                            transition-colors
+                            hover:text-zinc-950
+                            dark:hover:text-white
+                        "
+                    >
+                        View all →
+                    </a>
+                </div>
+
+                <div class="space-y-4">
+                    {
+                        newestPosts.map((post, index) => (
+                            <article
+                                class="
+                                    group
+                                    rounded-2xl
+                                    bg-zinc-50
+                                    dark:bg-zinc-950
+                                    [border:1px_solid_rgb(113_113_122)]
+                                    dark:[border:1px_solid_rgb(82_82_91)]
+                                    [transition:transform_450ms_cubic-bezier(0.16,1,0.3,1)]
+                                    hover:translate-x-2
+                                "
+                            >
+                                <a
+                                    href={`${import.meta.env.BASE_URL}blog/${post.id}/`}
+                                    class="
+                                        block
+                                        px-6
+                                        py-6
+                                        sm:px-8
+                                        sm:py-7
+                                    "
+                                >
+                                    <div
+                                        class="
+                                            flex
+                                            items-center
+                                            justify-between
+                                            gap-4
+                                        "
+                                    >
+                                        <div
+                                            class="
+                                                flex
+                                                items-center
+                                                gap-3
+                                                text-[0.65rem]
+                                                sm:text-xs
+                                                font-700
+                                                uppercase
+                                                tracking-[0.14em]
+                                                text-zinc-500
+                                            "
+                                        >
+                                            <time
+                                                datetime={post.data.pubDate.toISOString()}
+                                            >
+                                                {post.data.pubDate.toLocaleDateString(
+                                                    "en-US",
+                                                    {
+                                                        year: "numeric",
+                                                        month: "short",
+                                                        day: "numeric",
+                                                    }
+                                                )}
+                                            </time>
+
+                                            {post.data.tags.length > 0 && (
+                                                <>
+                                                    <span>·</span>
+
+                                                    <span>
+                                                        {post.data.tags.join(
+                                                            " · "
+                                                        )}
+                                                    </span>
+                                                </>
+                                            )}
+                                        </div>
+
+                                        <span
+                                            class="
+                                                text-xs
+                                                font-700
+                                                uppercase
+                                                tracking-[0.14em]
+                                                text-zinc-300
+                                                dark:text-zinc-700
+                                            "
+                                        >
+                                            0{index + 1}
+                                        </span>
+                                    </div>
+
+                                    <h3
+                                        class="
+                                            mt-5
+                                            text-3xl
+                                            sm:text-4xl
+                                            font-800
+                                            tracking-[-0.02em]
+                                            leading-[1.05]
+                                        "
+                                    >
+                                        <span class="gradient-text-2">
+                                            {post.data.title}
+                                        </span>
+                                    </h3>
+
+                                    <p
+                                        class="
+                                            mt-4
+                                            max-w-2xl
+                                            text-sm
+                                            sm:text-base
+                                            font-450
+                                            tracking-[0.01em]
+                                            leading-7
+                                            text-zinc-500
+                                            dark:text-zinc-400
+                                        "
+                                    >
+                                        {post.data.description}
+                                    </p>
+
+                                    <div
+                                        class="
+                                            mt-5
+                                            h-1
+                                            w-0
+                                            rounded-full
+                                            gradient-accent
+                                            transition-[width]
+                                            duration-500
+                                            ease-out
+                                            group-hover:w-20
+                                        "
+                                    />
+                                </a>
+                            </article>
+                        ))
+                    }
+                </div>
+
+                {
+                    posts.length === 0 && (
+                        <p
+                            class="
+                                text-sm
+                                font-600
+                                text-zinc-400
+                                dark:text-zinc-600
+                            "
+                        >
+                            No posts yet.
+                        </p>
+                    )
+                }
+            </div>
+        </section>
+
+        <!-- Final CTA -->
+        <section
+            class="
+                snap-section
+                flex
+                min-h-screen
+                flex-col
+                justify-center
+            "
+        >
+            <div class="w-full">
+                <div class="text-center">
+                    <p
+                        class="
+                            text-xs
+                            font-700
+                            uppercase
+                            tracking-[0.18em]
+                            text-zinc-400
+                            dark:text-zinc-500
+                        "
+                    >
+                        Still curious?
+                    </p>
+
+                    <h2
+                        class="
+                            mt-6
+                            text-5xl
+                            sm:text-7xl
+                            lg:text-[8rem]
+                            font-900
+                            tracking-[-0.04em]
+                            leading-[0.85]
+                        "
+                    >
+                        <span class="text-container drop-shadow-8">
+							<span class="stroke-6" aria-hidden="true">Go deeper.</span>
+							<span class="gradient-text">Go deeper.</span>
+						</span>
+                    </h2>
+
+                    <a
+                        href={`${import.meta.env.BASE_URL}blog/`}
+                        class="
+                            mt-10
+                            inline-flex
+                            items-center
+                            gap-3
+                            text-xs
+                            sm:text-sm
+                            font-700
+                            uppercase
+                            tracking-[0.15em]
+                            text-zinc-950
+                            dark:text-white
+                            transition-transform
+                            duration-300
+                            hover:translate-x-2
+                        "
+                    >
+                        Explore everything
+                        <span class="text-lg">→</span>
+                    </a>
+                </div>
+
+                <footer
+                    class="
+                        mt-24
+                        border-t
+                        border-zinc-200
+                        dark:border-zinc-800
+                        pt-8
+                    "
+                >
+                    <div
+                        class="
+                            flex
+                            flex-col
+                            gap-4
+                            sm:flex-row
+                            sm:items-center
+                            sm:justify-between
+                        "
+                    >
+                        <p
+                            class="
+                                text-xs
+                                font-600
+                                uppercase
+                                tracking-[0.12em]
+                                text-zinc-400
+                                dark:text-zinc-600
+                            "
+                        >
+                            Sidetrek
+                        </p>
+
+                        <div class="flex flex-wrap gap-6">
+                            {
+                                socials.map((social) => (
+                                    <a
+                                        href={social.href}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        class="
+                                            text-xs
+                                            font-700
+                                            uppercase
+                                            tracking-[0.12em]
+                                            text-zinc-400
+                                            transition-colors
+                                            hover:text-zinc-950
+                                            dark:text-zinc-600
+                                            dark:hover:text-white
+                                        "
+                                    >
+                                        {social.name}
+                                    </a>
+                                ))
+                            }
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </section>
+
+    </main>
+</Layout>

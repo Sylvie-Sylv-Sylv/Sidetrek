@@ -1,39 +1,122 @@
 ---
 import "../styles/global.css";
+import Layout from "./Layout.astro";
 
 const {
-  title,
-  description,
-  pubDate
+    title,
+    description,
+    pubDate,
+    tags = [],
 } = Astro.props;
 ---
 
-<html lang="en">
-  <head>
-    <title>{title}</title>
-    <meta
-      name="description"
-      content={description}
-    />
-  </head>
+<Layout
+    title={title}
+    description={description}
+>
+    <main class="container-content py-16 sm:py-20">
+        <!-- Header -->
+        <header class="mb-8 sm:mb-8">
+            <a
+                href={`${import.meta.env.BASE_URL}blog/`}
+                class="
+                    text-xs
+                    font-700
+                    uppercase
+                    tracking-[0.18em]
+                    text-zinc-400
+                    transition-colors
+                    hover:text-zinc-950
+                    dark:text-zinc-400
+                    dark:hover:text-white
+                "
+            >
+                ← Blog
+            </a>
 
-  <body>
-    <header>
-      <a href="/">Your Blog</a>
-    </header>
+            <div
+                class="
+                    mt-10
+                    flex
+                    items-center
+                    gap-3
+                    text-[0.65rem]
+                    sm:text-xs
+                    font-700
+                    uppercase
+                    tracking-[0.14em]
+                    text-zinc-500
+                    dark:text-zinc-500
+                "
+            >
+                <time datetime={pubDate.toISOString()}>
+                    {pubDate.toLocaleDateString(
+                        "en-US",
+                        {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                        }
+                    )}
+                </time>
 
-    <main>
-      <article>
-        <header>
-          <h1>{title}</h1>
+                {tags.length > 0 && (
+                    <>
+                        <span>·</span>
+                        <span>{tags.join(" · ")}</span>
+                    </>
+                )}
+            </div>
 
-          <time>
-            {pubDate.toLocaleDateString()}
-          </time>
+            <h1
+                class="
+                    mt-6
+                    text-5xl
+                    sm:text-[7rem]
+                    lg:text-[9rem]
+                    font-900
+                    tracking-[-0.025em]
+                    leading-[0.9]
+                "
+            >
+                <span class="stroke-6 drop-shadow-8 gradient-text">
+                    {title}
+                </span>
+            </h1>
+
+            <p
+                class="
+                    mt-10
+                    max-w-2xl
+                    text-base
+                    sm:text-lg
+                    font-500
+                    tracking-[0.01em]
+                    leading-6
+                    sm:leading-7
+                    text-zinc-500
+                    dark:text-zinc-500
+                "
+            >
+                {description}
+            </p>
         </header>
 
-        <slot />
-      </article>
+        <!-- Post -->
+        <article
+            class="
+                max-w-3xl
+                text-base
+                sm:text-lg
+                leading-8
+                sm:leading-9
+                text-zinc-700
+                dark:text-zinc-400
+            "
+        >
+            <div class="prose-blog">
+                <slot />
+            </div>
+        </article>
     </main>
-  </body>
-</html>
+</Layout>
