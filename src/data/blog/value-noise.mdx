@@ -1,0 +1,884 @@
+---
+title: "Value noise: Interpolating randomness"
+description: "A deep dive into value noise, from its deceptively simple grid of random values to the interpolation that turns those discrete points into smooth, continuous patterns. We'll build it from scratch, explore why it naturally produces a distinctive blocky or square-like structure, and see how changing the interpolation function transforms its character."
+pubDate: 2026-08-25
+tags:
+  - programming
+  - procedural generation
+  - gradient noise
+---
+
+# Introduction to procedural generation
+## What is procedural generation?
+
+In computing, procedural generation is a method of creating data algorithmically as opposed to manually, typically through a combination of human-generated content and algorithms coupled with computer-generated randomness and processing power.
+
+In computer graphics, it is commonly used to create textures and 3D models.
+
+In video games, it is used to automatically create large amounts of content in a game.
+
+In this blog, today, we will be mostly talking about the use of procedural generation in computer graphics and video games.
+
+
+# Smooth noise
+
+## The problem with randomness
+
+At first glance, randomness seems like exactly what procedural generation needs. If we want to generate a texture, a terrain, or some other piece of content without manually specifying every detail, why not simply generate random values and use them directly?
+
+The problem is that **randomness does not automatically produce structure**.
+
+Consider a sequence of completely random values:
+
+```text
+0.12  0.91  0.37  0.76  0.04  0.63  0.28  0.85
+```
+
+Each value is independent of the ones around it. There is no relationship between neighboring samples, and therefore no reason for nearby points to look similar.
+
+This is useful when we actually want independent randomness. But for most procedural graphics, that is not what we want.
+
+Imagine using those values as the brightness of neighboring pixels in an image. One pixel might be almost black while the pixel directly beside it is nearly white. The result is **white noise**: a dense field of seemingly random speckles with no larger-scale structure.
+
+For procedural generation, we usually want something different.
+
+We want randomness to provide **variation**, while some form of structure determines how that variation is distributed. Nearby points should often be related to one another, so that random values can form smooth hills, clouds, patterns, or other coherent shapes.
+
+This gives us a useful distinction:
+
+> Randomness gives us unpredictability. Structure gives us continuity.
+
+The challenge, then, is not simply to generate random numbers. It is to find a way to turn those numbers into a function that changes smoothly across space.
+
+That is the purpose of **noise functions**. They take controlled randomness and transform it into a continuous signal that can be sampled at any position.
+
+Before getting there, however, it is worth looking at the simplest possible kind of visual randomness: **white noise**.
+
+## White noise: Absolute chaos
+
+White noise is perhaps the simplest possible form of procedural randomness.
+
+For every position, we independently generate a random value:
+
+$$
+N(x) = R(x)
+$$
+
+where (R(x)) is an independent random value.
+
+In two dimensions, we could do the same thing for every pixel:
+
+$$
+N(x,y) = R(x,y)
+$$
+
+The important part is that the value at one position tells us essentially nothing about the value at another position.
+
+For example, two neighboring pixels might contain
+
+```text
+0.21  0.87
+```
+
+while the next pair might contain
+
+```text
+0.63  0.14
+```
+
+There is no concept of a neighboring value being similar.
+
+Visually, this produces something like television static: every pixel is making its own decision, completely unaware of what is happening around it.
+
+This is the fundamental problem with using raw randomness for things such as terrain or clouds. A terrain generated this way would not contain hills. It would contain pixels independently deciding whether they should be high or low. A cloud generated this way would not contain soft cloud formations. It would contain isolated pixels with different densities.
+
+We therefore need some kind of relationship between nearby points. And this leads to an important idea:
+
+> Randomness gives us variation. Continuity gives us structure.
+
+The goal of procedural noise is not to eliminate randomness, but to control how randomness changes across space.
+
+## Smooth noise: Moving past anarchy
+
+Suppose instead of assigning every position a completely unrelated random value, we wanted nearby positions to have similar values.
+
+Imagine a point moving continuously through space. As the point moves, we want the output of our noise function to change gradually:
+
+$$
+x_1 \approx x_2
+\quad\Longrightarrow\quad
+N(x_1) \approx N(x_2)
+$$
+
+This does not mean that the function should become predictable or constant. We still want variation. We simply want that variation to happen over space rather than independently at every point.
+
+Consider the difference between these two signals:
+
+Random:
+
+```text
+0.1  0.9  0.2  0.8  0.1  0.7  0.3
+```
+
+Smooth:
+
+```text
+0.2  0.3  0.4  0.5  0.6  0.7  0.6
+```
+
+Both contain variation.
+
+The first changes abruptly from one sample to the next. The second changes gradually.
+
+That gradual change is what makes the second signal useful for constructing larger structures.
+
+In two dimensions, the same idea becomes even more interesting. Instead of every pixel being unrelated to its neighbors, nearby pixels can share information. A high-valued region can gradually transition into a low-valued region, producing shapes that resemble hills, clouds, waves, or other natural patterns.
+
+## What makes good smooth procedural noise?
+
+So what do we actually want from a noise function?
+
+### Smoothness
+
+Nearby points should have similar values.
+
+If we move only a small distance through the input space, the output should also change by a small amount:
+
+$$
+x_1 \approx x_2
+\quad\Longrightarrow\quad
+N(x_1) \approx N(x_2)
+$$
+
+This gives the noise a continuous, coherent appearance instead of the disconnected look of white noise.
+
+### Variation
+
+Smoothness alone is not enough. The noise should still contain enough variation to produce interesting patterns.
+
+We want the output to change across space, but not so abruptly that neighboring points become unrelated.
+
+In other words, the noise should be smooth without becoming flat.
+
+### Frequency without repetitiveness
+
+Noise should have a characteristic frequency: the scale at which its values tend to change.
+
+Low-frequency noise produces large, broad features, while high-frequency noise produces smaller, finer details.
+
+However, the pattern should not simply repeat at that frequency. A good noise function should feel irregular rather than looking like a regular wave or tiled texture.
+
+### Customizable frequency and amplitude
+
+It is also useful to control the noise's frequency and amplitude independently.
+
+The frequency controls how quickly the noise changes:
+
+$$
+N(fx)
+$$
+
+where increasing (f) produces smaller, more frequent features.
+
+The amplitude controls how strongly the noise varies:
+
+$$
+A,N(x)
+$$
+
+where increasing (A) makes the variation larger.
+
+Together, they let us control both the scale and strength of the generated pattern.
+
+These properties give us a simple goal:
+
+We want noise that is smooth, varied, non-repetitive, and controllable.
+
+Now we can look at the simplest way to construct such a function: value noise.
+
+# Value noise
+## The basic idea
+
+We have established the goal: we want a function that produces smooth, varied, non-repetitive randomness while letting us control its frequency and amplitude.
+
+Value noise starts with a surprisingly simple idea:
+
+Instead of making every point random, make only a small set of points random, then interpolate between them.
+
+Imagine placing random values at evenly spaced points:
+
+0.2       0.8       0.4       0.9
+●---------●---------●---------●
+
+The values at the dots are random, but the space between them is not assigned random values independently.
+
+Instead, we calculate the values between the dots using interpolation.
+
+This means that a point close to (0.2) will have a value close to (0.2), while a point closer to (0.8) will gradually approach (0.8).
+
+The randomness is therefore concentrated at the grid points, while interpolation provides the continuity between them.
+
+That is the core idea behind value noise.
+
+## A grid of white noise
+
+To construct value noise, we first need a collection of random values.
+
+In one dimension, this can be represented as a sequence:
+
+0.2       0.8       0.4       0.9
+●---------●---------●---------●
+  cell 0     cell 1     cell 2
+
+Each point has a random value, but the points are separated by a fixed distance.
+
+For a position (x), we first find the two grid points surrounding it.
+
+For example, if
+
+$$
+x = 1.3
+$$
+
+then (x) lies between grid points (1) and (2).
+
+We can write
+
+$$
+i = \lfloor x \rfloor
+$$
+
+to find the grid cell, and
+
+$$
+t = x - \lfloor x \rfloor
+$$
+
+to find where (x) lies inside that cell.
+
+Here, (t) is always between (0) and (1):
+
+$$
+0 \leq t < 1
+$$
+
+We can then look up the random values at the two endpoints:
+
+$$
+v_0 = V(i)
+$$
+
+$$
+v_1 = V(i+1)
+$$
+
+The remaining problem is simple:
+
+How do we calculate the value between (v_0) and (v_1)?
+
+This is where interpolation comes in.
+
+## Interpolating in between
+
+Interpolation is the process of estimating a value between known values.
+
+Given two values (a) and (b), we want some function that tells us what the value should be at a position (t) between them.
+
+Here,
+
+$$
+t \in [0,1]
+$$
+
+where
+
+$$
+t=0
+$$
+
+means the beginning of the interval and
+
+$$
+t=1
+$$
+
+means the end.
+
+Different interpolation functions produce different transitions between the same two values.
+
+### Linear interpolation
+
+The simplest solution is linear interpolation, or lerp.
+
+The formula is
+
+$$
+a+t(b-a)
+$$
+
+At the two endpoints, it behaves exactly as we want:
+
+$$
+\operatorname{lerp}(a,b,0)=a
+$$
+
+and
+
+$$
+\operatorname{lerp}(a,b,1)=b
+$$
+
+For example, interpolating from (0.2) to (0.8):
+
+$$
+\operatorname{lerp}(0.2,0.8,0.5)=0.5
+$$
+
+The transition looks like a straight line:
+
+0.8 |                         ●
+    |                     /
+    |                 /
+0.5 |             ●
+    |         /
+    |     /
+0.2 | ●
+    +-------------------------
+      0          0.5        1
+
+Linear interpolation is simple and often useful. However, it introduces an important problem for noise.
+
+When we reach a grid point and start interpolating toward the next one, the slope can suddenly change.
+
+The value itself remains continuous, but its derivative does not necessarily match on both sides of the grid point.
+
+Visually, this can make the noise feel somewhat mechanical.
+
+So rather than changing the values directly with (t), we can change how (t) moves from (0) to (1).
+
+That gives us smooth interpolation.
+
+### Smooth interpolation
+
+The general idea is simple.
+
+Instead of using (t) directly:
+
+$$
+a+t(b-a)
+$$
+
+we first pass (t) through a smoothstep function:
+
+$$
+s(t)
+$$
+
+and then interpolate using (s(t)):
+
+$$
+\operatorname{lerp}(a,b,s(t))
+$$
+
+The interpolation still starts at (a) and ends at (b), but the transition can now ease into and out of the endpoints.
+
+There are several ways to choose (s(t)).
+
+Cosine interpolation
+
+One of the earliest and simplest choices is cosine interpolation:
+
+$$
+\frac{1-\cos(\pi t)}{2}
+$$
+
+At (t=0):
+
+$$
+s(0)=0
+$$
+
+and at (t=1):
+
+$$
+s(1)=1
+$$
+
+The cosine curve starts slowly, accelerates through the middle, and slows down again near the end.
+
+This gives a softer transition than linear interpolation.
+
+The resulting interpolation is
+
+$$
+\operatorname{lerp}
+\left(
+v_0,
+v_1,
+\frac{1-\cos(\pi t)}{2}
+\right)
+$$
+
+Cosine interpolation is easy to understand and produces a noticeably smoother result.
+
+However, it requires evaluating a trigonometric function, and there are polynomial alternatives that can provide similar or better control.
+
+Cubic interpolation
+
+A simple cubic smoothstep function is
+
+$$
+s(t)=3t^2-2t^3
+$$
+
+or equivalently,
+
+$$
+s(t)=t^2(3-2t)
+$$
+
+This function has an important property:
+
+$$
+s'(0)=s'(1)=0
+$$
+
+The transition therefore begins and ends with zero slope.
+
+That means the interpolation does not abruptly change direction when it reaches a grid point.
+
+This is a major improvement for noise.
+
+Cubic smoothstep is also computationally convenient because it requires only multiplication and addition.
+
+Hermite interpolation
+
+The cubic smoothstep function above is actually a special case of cubic Hermite interpolation.
+
+Hermite interpolation constructs a cubic curve using not only the endpoint values, but also information about their derivatives.
+
+For two values (a) and (b), with endpoint slopes (m_0) and (m_1), the cubic Hermite interpolation is
+
+$$
+(2t^3-3t^2+1)a
++
+(t^3-2t^2+t)m_0
++
+(-2t^3+3t^2)b
++
+(t^3-t^2)m_1
+$$
+
+This gives us much more control over the shape of the transition.
+
+For the smoothstep function
+
+$$
+s(t)=3t^2-2t^3
+$$
+
+we can think of the endpoint slopes as zero.
+
+So Hermite interpolation gives us a useful way to understand why smoothstep works: we are explicitly controlling the slope at the boundaries.
+
+There is also a commonly used higher-order version:
+
+$$
+6t^5-15t^4+10t^3
+$$
+
+This is known as the quintic smoothstep or fade function.
+
+It satisfies
+
+$$
+s'(0)=s'(1)=0
+$$
+
+and also
+
+$$
+s''(0)=s''(1)=0
+$$
+
+This makes the transition even smoother at the boundaries.
+
+The important idea is not that one interpolation method is universally "correct".
+
+Rather, the interpolation function controls the character of the resulting noise.
+
+Linear interpolation gives a simple, direct transition.
+
+Cosine interpolation eases the transition smoothly.
+
+Cubic smoothstep removes the slope discontinuity at the endpoints.
+
+Higher-order Hermite-style functions can make the transition even smoother.
+
+This is one of the reasons interpolation is such an important part of value noise.
+
+### Extending interpolation to 2D
+
+So far, we have only considered a line of random values.
+
+For textures and terrain, however, we need noise over a two-dimensional plane.
+
+Instead of two endpoints, we now have four corners of a grid cell:
+
+v00 -------- v10
+ |             |
+ |      p      |
+ |             |
+v01 -------- v11
+
+For a point (p=(x,y)), we first find the grid cell containing it.
+
+We then calculate the fractional coordinates inside the cell:
+
+$$
+t_x=x-\lfloor x\rfloor
+$$
+
+$$
+t_y=y-\lfloor y\rfloor
+$$
+
+We can now interpolate horizontally along the top and bottom edges.
+
+First:
+
+$$
+a=
+\operatorname{lerp}(v_{00},v_{10},s(t_x))
+$$
+
+and
+
+$$
+b=
+\operatorname{lerp}(v_{01},v_{11},s(t_x))
+$$
+
+Then we interpolate between those two results vertically:
+
+$$
+\operatorname{lerp}(a,b,s(t_y))
+$$
+
+In other words, 2D value noise is just interpolation performed twice.
+
+First we interpolate across one axis, then across the other.
+
+The random values remain only at the grid corners, while every point inside the cell gets a value derived from those corners.
+
+That gives us a continuous function across the entire plane.
+
+And this is where value noise starts to become useful: with just a grid of random values and a choice of interpolation function, we can turn discrete randomness into a smooth procedural pattern.
+
+## Looking at the derivatives
+
+So far, we have looked at interpolation mainly by its shape. Another useful way to understand the differences is through derivatives.
+
+The first derivative tells us how quickly the interpolation is changing.
+
+For an interpolation function $s(t)$, its derivative is
+
+$$
+s'(t)
+$$
+
+The behavior of this derivative at the boundaries of each grid cell is especially important. When one cell ends and another begins, we want the transition between them to be smooth.
+
+Linear interpolation
+
+For linear interpolation,
+
+$$
+s(t)=t
+$$
+
+the derivative is
+
+$$
+s'(t)=1
+$$
+
+The slope is constant everywhere:
+
+$$
+s'(0)=1
+\qquad
+s'(1)=1
+$$
+
+This means that when two neighboring cells have different values, their slopes can change abruptly at the boundary.
+
+The value itself remains continuous, but the derivative does not necessarily match.
+
+Cosine interpolation
+
+For cosine interpolation,
+
+$$
+s(t)=\frac{1-\cos(\pi t)}{2}
+$$
+
+the derivative is
+
+$$
+s'(t)=\frac{\pi}{2}\sin(\pi t)
+$$
+
+At both endpoints,
+
+$$
+s'(0)=0
+\qquad
+s'(1)=0
+$$
+
+The curve therefore approaches both endpoints with zero slope. This produces a smoother transition between neighboring cells than linear interpolation.
+
+Cubic smoothstep
+
+For cubic smoothstep,
+
+$$
+s(t)=3t^2-2t^3
+$$
+
+the derivative is
+
+$$
+s'(t)=6t-6t^2
+$$
+
+or equivalently,
+
+$$
+s'(t)=6t(1-t)
+$$
+
+Again,
+
+$$
+s'(0)=0
+\qquad
+s'(1)=0
+$$
+
+The interpolation therefore begins and ends with zero slope.
+
+The advantage is that this behavior can be achieved using only a polynomial, without evaluating a trigonometric function.
+
+Quintic smoothstep
+
+A commonly used higher-order interpolation function is
+
+$$
+s(t)=6t^5-15t^4+10t^3
+$$
+
+Its first derivative is
+
+$$
+s'(t)=30t^4-60t^3+30t^2
+$$
+
+which can also be written as
+
+$$
+s'(t)=30t^2(t-1)^2
+$$
+
+Therefore,
+
+$$
+s'(0)=0
+\qquad
+s'(1)=0
+$$
+
+The second derivative is
+
+$$
+s''(t)=120t^3-180t^2+60t
+$$
+
+and at the endpoints,
+
+$$
+s''(0)=0
+\qquad
+s''(1)=0
+$$
+
+So the quintic function matches not only the slope, but also the change in slope at the boundaries.
+
+Comparing the functions
+
+We can summarize their behavior at the boundaries:
+
+| Interpolation | $s'(0)$ | $s'(1)$ |          $s''(0)$ |           $s''(1)$ |
+| ------------- | ------: | ------: | ----------------: | -----------------: |
+| Linear        |     $1$ |     $1$ |               $0$ |                $0$ |
+| Cosine        |     $0$ |     $0$ | $\frac{\pi^2}{2}$ | $-\frac{\pi^2}{2}$ |
+| Cubic         |     $0$ |     $0$ |               $6$ |               $-6$ |
+| Quintic       |     $0$ |     $0$ |               $0$ |                $0$ |
+
+This gives us a more precise definition of smoothness.
+
+Linear interpolation is continuous, but its derivative can change abruptly at cell boundaries.
+
+Cosine and cubic interpolation have zero derivatives at the boundaries, producing smoother transitions.
+
+Quintic interpolation goes one step further by also making the second derivative zero at the boundaries.
+
+For value noise, these differences affect how noticeable the underlying grid becomes. Higher-order interpolation can hide the grid boundaries more effectively, producing smoother-looking noise.
+
+In practice, cubic and quintic smoothstep functions are particularly useful because they provide smooth transitions while remaining inexpensive to evaluate.
+
+The interpolation function therefore does more than simply connect two random values. It determines how those values influence the space between them, and consequently has a direct effect on the character of the resulting noise.  
+
+## Implementation
+
+With the interpolation functions established, value noise can be implemented in any number of dimensions. The core idea remains the same:
+
+1. Divide the input space into a regular grid.
+2. Assign a random value to each grid point.
+3. Determine which cell contains the input point.
+4. Interpolate the values at the cell's corners.
+
+The only thing that changes between dimensions is the number of corners that need to be interpolated.
+
+### 1D value noise
+
+For $x$, find the two surrounding grid points:
+
+$$
+i=\lfloor x\rfloor,\qquad t=x-i
+$$
+
+Then interpolate their values:
+
+$$
+N(x)=\operatorname{lerp}(v_i,v_{i+1},f(t))
+$$
+
+```python
+def value_noise_1d(x, interpolate):
+    i = floor(x)
+    t = x - i
+
+    a = random_value(i)
+    b = random_value(i + 1)
+
+    return lerp(a, b, interpolate(t))
+```
+
+### 2D value noise
+
+A 2D cell has four corner values. Interpolate along $x$, then interpolate the results along $y$:
+
+$$
+N(x,y)=
+\operatorname{lerp}
+\left(
+\operatorname{lerp}(v_{00},v_{10},f(t_x)),
+\operatorname{lerp}(v_{01},v_{11},f(t_x)),
+f(t_y)
+\right)
+$$
+
+```python
+def value_noise_2d(x, y, interpolate):
+    ix, iy = floor(x), floor(y)
+    tx, ty = x - ix, y - iy
+
+    v00 = random_value(ix,     iy)
+    v10 = random_value(ix + 1, iy)
+    v01 = random_value(ix,     iy + 1)
+    v11 = random_value(ix + 1, iy + 1)
+
+    tx, ty = interpolate(tx), interpolate(ty)
+
+    return lerp(
+        lerp(v00, v10, tx),
+        lerp(v01, v11, tx),
+        ty
+    )
+```
+
+### 3D value noise
+
+The same process extends to three dimensions. A cube has eight corner values, which are interpolated successively along $x$, $y$, and $z$.
+
+```python
+def value_noise_3d(x, y, z, interpolate):
+    ix, iy, iz = floor(x), floor(y), floor(z)
+    tx, ty, tz = x - ix, y - iy, z - iz
+
+    v = [
+        random_value(ix + dx, iy + dy, iz + dz)
+        for dz in (0, 1)
+        for dy in (0, 1)
+        for dx in (0, 1)
+    ]
+
+    tx, ty, tz = map(interpolate, (tx, ty, tz))
+
+    x0 = lerp(v[0], v[1], tx)
+    x1 = lerp(v[2], v[3], tx)
+    x2 = lerp(v[4], v[5], tx)
+    x3 = lerp(v[6], v[7], tx)
+
+    y0 = lerp(x0, x1, ty)
+    y1 = lerp(x2, x3, ty)
+
+    return lerp(y0, y1, tz)
+```
+
+In all three cases, the interpolation function is independent from the noise itself. This means the same value noise can use linear interpolation, smoothstep, smootherstep, or any other function satisfying the desired endpoint constraints.
+
+# From value noise to gradient noise
+## The limitations of value noise
+
+Value noise is simple and effective, but its regular grid remains visible in the resulting pattern. Since each cell is defined directly by a fixed set of corner values, the noise tends to inherit the structure of the underlying lattice.
+
+* Grid-aligned artifacts: Changes in the noise are strongly tied to the boundaries of the grid cells.
+* Square-shaped structures: In 2D, the influence of each set of corner values naturally produces square or axis-aligned features.
+* Derivative discontinuities: Even when the value itself is continuous, its derivatives can change abruptly across cell boundaries depending on the interpolation function.
+
+The fundamental problem is that the grid points store absolute values. Interpolation can smooth the transition between those values, but it cannot remove the underlying structure imposed by the lattice.
+
+## A different idea
+
+Instead of assigning a random scalar to each grid point, we can assign a gradient vector:
+
+$$
+\mathbf{g}_{ij}=(g_x,g_y)
+$$
+
+The grid no longer tells us directly what value the noise should have. Instead, each gradient describes a direction of influence.
+
+For a point $\mathbf{x}$ inside a cell, consider a grid point $\mathbf{p}$. The vector from the grid point to the sample is
+
+$$
+\mathbf{d}=\mathbf{x}-\mathbf{p}
+$$
+
+We measure how strongly the gradient influences the sample using a dot product:
+
+$$
+c=\mathbf{g}\cdot\mathbf{d}
+$$
+
+The contributions from the surrounding grid points are then interpolated to produce the final noise value.
+
+This is the basic idea behind gradient noise.
+
+Unlike value noise, the grid points no longer represent the value of the function itself. They represent its local direction of change. The noise is therefore constructed from the interaction between the gradients and the sample position.
+
+This small change has a significant effect on the resulting pattern. Instead of smoothly blending fixed values across a cell, the function blends directional contributions. Features can therefore flow through the grid rather than simply following its boundaries, producing noise that is generally less blocky and less visibly aligned with the lattice.
+
+The grid is still there, but its role has changed: it provides the local gradients from which the continuous function is constructed, rather than directly defining its value

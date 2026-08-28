@@ -1,3 +1,5 @@
+@import "katex/dist/katex.min.css";
+
 :root {
     font-family:
         Inter,
@@ -7,11 +9,13 @@
         BlinkMacSystemFont,
         "Segoe UI",
         sans-serif;
+
     color: #18181b;
     background: #0d0d0e;
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
+
     --wide-width: 1120px;
 }
 
@@ -100,6 +104,10 @@ code {
     background: #a1a1aa;
 }
 
+/* ========================================
+   Containers
+   ======================================== */
+
 .container-content {
     width: 88%;
     margin-inline: auto;
@@ -112,6 +120,10 @@ code {
     );
     margin-inline: auto;
 }
+
+/* ========================================
+   Gradients
+   ======================================== */
 
 .gradient-text {
     background: linear-gradient(
@@ -154,10 +166,18 @@ code {
     );
 }
 
+/* ========================================
+   Focus
+   ======================================== */
+
 :focus-visible {
     outline: 2px solid #8b5cf6;
     outline-offset: 3px;
 }
+
+/* ========================================
+   Reduced motion
+   ======================================== */
 
 @media (prefers-reduced-motion: reduce) {
     html {
@@ -172,6 +192,10 @@ code {
         scroll-behavior: auto !important;
     }
 }
+
+/* ========================================
+   Dark mode
+   ======================================== */
 
 @media (prefers-color-scheme: dark) {
     :root {
@@ -199,22 +223,13 @@ code {
     }
 
     ::-webkit-scrollbar-thumb:hover {
-        background: #52525b;
+        background: #52525a;
     }
 
-    .gradient-text-2 {
-        background: linear-gradient(
-            110deg,
-            #b5e1fd,
-            #e1a8f9
-        );
-        background-clip: text;
-        -webkit-background-clip: text;
-        color: transparent;
-        -webkit-text-fill-color: transparent;
-    }
+    /* ========================================
+       Blog title
+       ======================================== */
 
-    /* Container: Handles layout & drop-shadow */
     .text-container {
         display: inline-grid;
         grid-template-areas: "stack";
@@ -222,10 +237,9 @@ code {
 
     .text-container > span {
         grid-area: stack;
-        line-height: 1.15; /* Ensures box height fully covers CJK glyph bounds */
+        line-height: 1.15;
     }
 
-    /* Layer 1 (Bottom): White Outer Stroke */
     .stroke-6 {
         -webkit-text-stroke: 16px #ffffff;
         color: transparent;
@@ -238,7 +252,6 @@ code {
         -webkit-text-fill-color: transparent;
     }
 
-    /* Layer 2 (Top): Gradient Fill */
     .gradient-text {
         background: linear-gradient(
             110deg,
@@ -250,7 +263,7 @@ code {
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         color: transparent;
-        padding-block: 0.15em; /* Expands gradient box to prevent line clipping */
+        padding-block: 0.15em;
         margin-block: -0.15em;
     }
 
@@ -268,7 +281,10 @@ code {
         margin-block: -0.15em;
     }
 
-    /* Drop Shadow Utilities */
+    /* ========================================
+       Drop shadows
+       ======================================== */
+
     .drop-shadow-8 {
         filter: drop-shadow(0 8px 0 #eaa9ff);
     }
@@ -287,13 +303,15 @@ code {
     }
 }
 
+/* ========================================
+   Navigation
+   ======================================== */
+
 .site-nav {
     position: sticky;
     top: 0;
     z-index: 50;
-
     border-bottom: 1px solid #3f3f46;
-
     background: rgba(9, 9, 11, 0.9);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
@@ -303,7 +321,6 @@ code {
     position: sticky;
     bottom: 0;
     z-index: 50;
-
     border-top: 1px solid #3f3f46;
     background: rgba(9, 9, 11, 0.9);
     backdrop-filter: blur(12px);
@@ -316,6 +333,7 @@ code {
 
 .prose-blog {
     width: 100%;
+    max-width: none;
     color: #a1a1aa;
 }
 
@@ -323,12 +341,71 @@ code {
     margin-top: 1.5rem;
 }
 
-/* Headings */
+/* ========================================
+   KaTeX
+   ======================================== */
+
+/*
+ * KaTeX generates two representations:
+ *
+ *   .katex-mathml  → accessibility / screen readers
+ *   .katex-html    → visual rendering
+ *
+ * KaTeX's own stylesheet normally hides the MathML
+ * representation visually. These rules ensure that
+ * remains true even if other global styles interfere.
+ */
+
+.prose-blog .katex {
+    font-size: 1.1em;
+}
+
+.prose-blog .katex-mathml {
+    position: absolute;
+    clip: rect(1px, 1px, 1px, 1px);
+    clip-path: inset(50%);
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    white-space: nowrap;
+    border: 0;
+}
+
+.prose-blog .katex-html {
+    display: inline-block;
+}
+
+.prose-blog .katex-display {
+    display: block;
+    margin-block: 2rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-block: 0.25rem;
+    text-align: center;
+}
+
+.prose-blog .katex-display > .katex {
+    display: inline-block;
+    text-align: initial;
+    white-space: nowrap;
+}
+
+.prose-blog .katex-display .katex-html {
+    display: inline-block;
+}
+
+/* ========================================
+   Headings
+   ======================================== */
 
 .prose-blog h1,
 .prose-blog h2,
 .prose-blog h3,
 .prose-blog h4 {
+    width: 100%;
+    max-width: none;
     color: #fafafa;
     font-weight: 800;
     line-height: 1.15;
@@ -355,10 +432,13 @@ code {
     font-size: 1.1rem;
 }
 
-/* Paragraphs */
+/* ========================================
+   Paragraphs
+   ======================================== */
 
 .prose-blog p {
-    max-width: 70ch;
+    width: 100%;
+    max-width: none;
     color: #a1a1aa;
     font-size: 1rem;
     line-height: 1.6;
@@ -369,7 +449,9 @@ code {
     margin-top: 1.5rem;
 }
 
-/* Links */
+/* ========================================
+   Links
+   ======================================== */
 
 .prose-blog a {
     color: #c4b5fd;
@@ -387,7 +469,9 @@ code {
     text-decoration-color: #f9a8d4;
 }
 
-/* Bold / italic */
+/* ========================================
+   Bold / Italic
+   ======================================== */
 
 .prose-blog strong {
     color: #fafafa;
@@ -398,11 +482,14 @@ code {
     color: #d4d4d8;
 }
 
-/* Lists */
+/* ========================================
+   Lists
+   ======================================== */
 
 .prose-blog ul,
 .prose-blog ol {
-    max-width: 68ch;
+    width: 100%;
+    max-width: none;
     padding-left: 1.5rem;
     color: #a1a1aa;
 }
@@ -428,7 +515,9 @@ code {
     color: #a78bfa;
 }
 
-/* Inline code */
+/* ========================================
+   Inline code
+   ======================================== */
 
 .prose-blog :not(pre) > code {
     padding: 0.15em 0.4em;
@@ -439,10 +528,14 @@ code {
     font-size: 0.875em;
 }
 
-/* Code blocks */
+/* ========================================
+   Code blocks
+   ======================================== */
 
 .prose-blog pre {
     position: relative;
+    width: 100%;
+    max-width: none;
     overflow-x: auto;
     margin-top: 2rem;
     margin-bottom: 2rem;
@@ -455,6 +548,7 @@ code {
     line-height: 1.7;
     letter-spacing: 0;
     tab-size: 4;
+    box-sizing: border-box;
 }
 
 .prose-blog pre code {
@@ -465,42 +559,58 @@ code {
     font-size: inherit;
 }
 
-/* Blockquotes */
+/* ========================================
+   Blockquotes
+   ======================================== */
 
 .prose-blog blockquote {
+    width: 100%;
+    max-width: none;
     margin-block: 2rem;
     padding: 0.75rem 1.5rem;
     border-left: 3px solid #a78bfa;
     color: #a1a1aa;
     font-style: italic;
+    box-sizing: border-box;
 }
 
 .prose-blog blockquote p {
     color: inherit;
 }
 
-/* Horizontal rules */
+/* ========================================
+   Horizontal rules
+   ======================================== */
 
 .prose-blog hr {
+    width: 100%;
     margin-block: 3rem;
     border: 0;
     border-top: 1px solid #27272a;
 }
 
-/* Images */
+/* ========================================
+   Images
+   ======================================== */
 
 .prose-blog img {
     display: block;
     width: 100%;
+    max-width: none;
     height: auto;
     margin-block: 2.5rem;
     border: 1px solid #27272a;
     border-radius: 1rem;
+    box-sizing: border-box;
 }
 
-/* Figures / captions */
+/* ========================================
+   Figures / captions
+   ======================================== */
 
 .prose-blog figure {
+    width: 100%;
+    max-width: none;
     margin-block: 2.5rem;
 }
 
@@ -516,11 +626,14 @@ code {
     text-align: center;
 }
 
-/* Tables */
+/* ========================================
+   Tables
+   ======================================== */
 
 .prose-blog table {
     display: block;
     width: 100%;
+    max-width: none;
     overflow-x: auto;
     margin-block: 2rem;
     border-collapse: collapse;
@@ -544,7 +657,9 @@ code {
     color: #a1a1aa;
 }
 
-/* Keyboard */
+/* ========================================
+   Keyboard
+   ======================================== */
 
 .prose-blog kbd {
     padding: 0.15rem 0.4rem;
@@ -557,14 +672,18 @@ code {
     font-size: 0.8em;
 }
 
-/* Small text */
+/* ========================================
+   Small text
+   ======================================== */
 
 .prose-blog small {
     color: #71717a;
     font-size: 0.8rem;
 }
 
-/* First heading shouldn't have huge spacing */
+/* ========================================
+   First heading
+   ======================================== */
 
 .prose-blog > h1:first-child,
 .prose-blog > h2:first-child,
@@ -572,7 +691,9 @@ code {
     margin-top: 0;
 }
 
-/* Responsive */
+/* ========================================
+   Responsive
+   ======================================== */
 
 @media (min-width: 640px) {
     .prose-blog p {
